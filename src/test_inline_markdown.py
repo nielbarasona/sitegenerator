@@ -1,6 +1,6 @@
 import unittest
 
-from delimiter import split_nodes_delimiter
+from inline_markdown import split_nodes_delimiter
 from textnode import TextNode, TextType
 
 
@@ -66,3 +66,29 @@ class Testdelimiter(unittest.TestCase):
         nodes = [TextNode("This is `code` text", TextType.BOLD)]
         result = split_nodes_delimiter(nodes, "`", TextType.CODE)
         self.assertEqual(result, [TextNode("This is `code` text", TextType.BOLD)])
+
+    def test_delimiter_bold_and_italic(self):
+        nodes = [TextNode("This is **bold** and _italic_ text", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        result = split_nodes_delimiter(result, "_", TextType.ITALIC)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" text", TextType.TEXT),
+            ],
+        )
+
+    def test_delimiter_multiword(self):
+        nodes = [TextNode("This is **bold text**", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("bold text", TextType.BOLD),
+            ],
+        )
