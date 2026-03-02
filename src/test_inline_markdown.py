@@ -1,10 +1,14 @@
 import unittest
 
-from inline_markdown import split_nodes_delimiter
+from inline_markdown import (
+    split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links,
+)
 from textnode import TextNode, TextType
 
 
-class Testdelimiter(unittest.TestCase):
+class TestInlineMarkdown(unittest.TestCase):
     def test_code_delimiter(self):
         nodes = [TextNode("This is `code` text", TextType.TEXT)]
         result = split_nodes_delimiter(nodes, "`", TextType.CODE)
@@ -92,3 +96,47 @@ class Testdelimiter(unittest.TestCase):
                 TextNode("bold text", TextType.BOLD),
             ],
         )
+
+
+class TestExtract(unittest.TestCase):
+    def test_image(self):
+        text = "This is an image: ![alt text](https://www.example.com/image.jpg)"
+        matches = extract_markdown_images(text)
+        self.assertEqual(matches, [("alt text", "https://www.example.com/image.jpg")])
+
+    def test_multiple_images(self):
+        text = "Image 1: ![alt1](https://www.example.com/image1.jpg) Image 2: ![alt2](https://www.example.com/image2.jpg)"
+        matches = extract_markdown_images(text)
+        self.assertEqual(
+            matches,
+            [
+                ("alt1", "https://www.example.com/image1.jpg"),
+                ("alt2", "https://www.example.com/image2.jpg"),
+            ],
+        )
+
+    def test_no_images(self):
+        text = "This text has no images."
+        matches = extract_markdown_images(text)
+        self.assertEqual(matches, [])
+
+    def test_link(self):
+        text = "This is a link: [link text](https://www.example.com)"
+        matches = extract_markdown_links(text)
+        self.assertEqual(matches, [("link text", "https://www.example.com")])
+
+    def test_multiple_links(self):
+        text = "Link 1: [link1](https://www.example.com/link1) Link 2: [link2](https://www.example.com/link2)"
+        matches = extract_markdown_links(text)
+        self.assertEqual(
+            matches,
+            [
+                ("link1", "https://www.example.com/link1"),
+                ("link2", "https://www.example.com/link2"),
+            ],
+        )
+
+    def test_no_links(self):
+        text = "this text has no links."
+        matches = extract_markdown_links(text)
+        self.assertEqual(matches, [])
