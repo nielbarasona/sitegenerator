@@ -23,6 +23,56 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     return new_nodes
 
 
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        working_string = old_node.text
+        images = extract_markdown_images(working_string)
+        if len(images) == 0:
+            new_nodes.append(old_node)
+            continue
+        split_nodes = []
+        for image in images:
+            image_alt, image_url = image
+            sections = working_string.split(f"![{image_alt}]({image_url})", 1)
+            if sections[0] != "":
+                split_nodes.append(TextNode(sections[0], TextType.TEXT))
+            split_nodes.append(TextNode(image_alt, TextType.IMAGE, image_url))
+            working_string = sections[1]
+        if working_string != "":
+            split_nodes.append(TextNode(working_string, TextType.TEXT))
+        new_nodes.extend(split_nodes)
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        working_string = old_node.text
+        links = extract_markdown_links(working_string)
+        if len(links) == 0:
+            new_nodes.append(old_node)
+            continue
+        split_nodes = []
+        for link in links:
+            link_text, link_url = link
+            sections = working_string.split(f"[{link_text}]({link_url})", 1)
+            if sections[0] != "":
+                split_nodes.append(TextNode(sections[0], TextType.TEXT))
+            split_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+            working_string = sections[1]
+        if working_string != "":
+            split_nodes.append(TextNode(working_string, TextType.TEXT))
+        new_nodes.extend(split_nodes)
+    return new_nodes
+
+
 def extract_markdown_images(text):
     matches = re.findall(r"!\[([^\]]+)\]\(([^)]+)\)", text)
     return matches

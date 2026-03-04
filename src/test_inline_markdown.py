@@ -4,6 +4,8 @@ from inline_markdown import (
     split_nodes_delimiter,
     extract_markdown_images,
     extract_markdown_links,
+    split_nodes_image,
+    split_nodes_link,
 )
 from textnode import TextNode, TextType
 
@@ -95,6 +97,146 @@ class TestInlineMarkdown(unittest.TestCase):
                 TextNode("This is ", TextType.TEXT),
                 TextNode("bold text", TextType.BOLD),
             ],
+        )
+
+    def test_image_delimiter(self):
+        nodes = [
+            TextNode(
+                "This is an image: ![alt text](https://www.example.com/image.jpg)",
+                TextType.TEXT,
+            )
+        ]
+        result = split_nodes_image(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is an image: ", TextType.TEXT),
+                TextNode(
+                    "alt text", TextType.IMAGE, "https://www.example.com/image.jpg"
+                ),
+            ],
+        )
+
+    def test_multiple_images_delimiter(self):
+        nodes = [
+            TextNode(
+                "This is an image: ![alt1](https://www.example.com/image1.jpg) Image 2: ![alt2](https://www.example.com/image2.jpg)",
+                TextType.TEXT,
+            )
+        ]
+        result = split_nodes_image(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is an image: ", TextType.TEXT),
+                TextNode("alt1", TextType.IMAGE, "https://www.example.com/image1.jpg"),
+                TextNode(" Image 2: ", TextType.TEXT),
+                TextNode("alt2", TextType.IMAGE, "https://www.example.com/image2.jpg"),
+            ],
+        )
+
+    def test_image_delimiter_no_images(self):
+        nodes = [TextNode("This text has no images.", TextType.TEXT)]
+        result = split_nodes_image(nodes)
+        self.assertEqual(result, [TextNode("This text has no images.", TextType.TEXT)])
+
+    def test_image_delimiter_ending_string(self):
+        nodes = [
+            TextNode(
+                "This is an image: ![image text](https://www.example.com/image1.jpg) and some more text",
+                TextType.TEXT,
+            )
+        ]
+        result = split_nodes_image(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is an image: ", TextType.TEXT),
+                TextNode(
+                    "image text", TextType.IMAGE, "https://www.example.com/image1.jpg"
+                ),
+                TextNode(" and some more text", TextType.TEXT),
+            ],
+        )
+
+    def test_split_image_single(self):
+        node = TextNode(
+            "![image](https://www.example.COM/IMAGE.PNG)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("image", TextType.IMAGE, "https://www.example.COM/IMAGE.PNG"),
+            ],
+            new_nodes,
+        )
+
+    def test_link_delimiter(self):
+        nodes = [
+            TextNode(
+                "This is a link: [link text](https://www.example.com)", TextType.TEXT
+            )
+        ]
+        result = split_nodes_link(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is a link: ", TextType.TEXT),
+                TextNode("link text", TextType.LINK, "https://www.example.com"),
+            ],
+        )
+
+    def test_multiple_links_delimiter(self):
+        nodes = [
+            TextNode(
+                "This is a link: [link1](https://www.example.com/link1) Link 2: [link2](https://www.example.com/link2)",
+            )
+        ]
+        result = split_nodes_link(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is a link: ", TextType.TEXT),
+                TextNode("link1", TextType.LINK, "https://www.example.com/link1"),
+                TextNode(" Link 2: ", TextType.TEXT),
+                TextNode("link2", TextType.LINK, "https://www.example.com/link2"),
+            ],
+        )
+
+    def test_link_delimiter_no_links(self):
+        nodes = [TextNode("This text has no links.", TextType.TEXT)]
+        result = split_nodes_link(nodes)
+        self.assertEqual(result, [TextNode("This text has no links.", TextType.TEXT)])
+
+    def test_link_delimiter_ending_string(self):
+        nodes = [
+            TextNode(
+                "This is a link: [link text](https://www.example.com) and some more text",
+                TextType.TEXT,
+            )
+        ]
+        result = split_nodes_link(nodes)
+        self.assertEqual(
+            result,
+            [
+                TextNode("This is a link: ", TextType.TEXT),
+                TextNode("link text", TextType.LINK, "https://www.example.com"),
+                TextNode(" and some more text", TextType.TEXT),
+            ],
+        )
+
+    def test_split_link_single(self):
+        node = TextNode(
+            "[link text](https://www.example.com)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("link text", TextType.LINK, "https://www.example.com"),
+            ],
+            new_nodes,
         )
 
 
