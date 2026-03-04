@@ -6,6 +6,7 @@ from inline_markdown import (
     extract_markdown_links,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 from textnode import TextNode, TextType
 
@@ -282,3 +283,45 @@ class TestExtract(unittest.TestCase):
         text = "this text has no links."
         matches = extract_markdown_links(text)
         self.assertEqual(matches, [])
+
+
+class TestToTextNodes(unittest.TestCase):
+    def test_text_to_textnodes(self):
+        text = "This is **bold** and _italic_ text with a [link](https://www.example.com) and an image ![alt](https://www.example.com/image.jpg)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(
+            nodes,
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://www.example.com"),
+                TextNode(" and an image ", TextType.TEXT),
+                TextNode("alt", TextType.IMAGE, "https://www.example.com/image.jpg"),
+            ],
+        )
+
+    def test_text_to_textnodes_no_markdown(self):
+        text = "This is plain text with no markdown."
+        nodes = text_to_textnodes(text)
+        self.assertEqual(
+            nodes, [TextNode("This is plain text with no markdown.", TextType.TEXT)]
+        )
+
+    def test_text_to_textnodes_only_markdown(self):
+        text = "**bold** _italic_ [link](https://www.example.com) ![alt](https://www.example.com/image.jpg)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(
+            nodes,
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://www.example.com"),
+                TextNode(" ", TextType.TEXT),
+                TextNode("alt", TextType.IMAGE, "https://www.example.com/image.jpg"),
+            ],
+        )
