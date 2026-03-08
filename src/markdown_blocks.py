@@ -67,6 +67,8 @@ def markdown_to_html_node(markdown):
                 heading_node = ParentNode(f"h{counter}", children)
                 nodes.append(heading_node)
             case BlockType.CODE:
+                if not block.startswith("```") or not block.endswith("```"):
+                    raise ValueError("invalid code block")
                 content = block[4:-3]
                 text_node = TextNode(content, TextType.TEXT)
                 content_leaf = text_node_to_html_node(text_node)
@@ -98,7 +100,7 @@ def markdown_to_html_node(markdown):
                     children.append(ParentNode("li", text_to_children(stripped)))
                 olist_node = ParentNode("ol", children)
                 nodes.append(olist_node)
-            case _:
+            case BlockType.PARAGRAPH:
                 lines = block.split("\n")
                 rejoined = " ".join(lines)
                 children = text_to_children(rejoined)

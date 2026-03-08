@@ -225,6 +225,14 @@ this is paragraph text
             "<div><blockquote>This is a blockquote block</blockquote><p>this is paragraph text</p></div>",
         )
 
+    def test_invalid_codeblock(self):
+        md = """
+```
+this is a heading with too many levels
+"""
+        with self.assertRaises(ValueError):
+            markdown_to_html_node(md)
+
 
 if __name__ == "__main__":
     unittest.main()
