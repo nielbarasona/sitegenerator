@@ -1,9 +1,8 @@
-from textnode import TextNode, TextType
+from copy_dir import copy_contents
 
 
 def main():
-    dummy_testnode = TextNode("Hello World", TextType.LINK, "https://baraso.app/")
-    print(dummy_testnode)
+    copy_contents("static", "public")
 
 
 if __name__ == "__main__":
