@@ -20,6 +20,19 @@ def generate_page(from_path, template_path, dest_path):
         file.write(template_content)
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    list_dir = os.listdir(dir_path_content)
+    for file in list_dir:
+        source_full_path = os.path.join(dir_path_content, file)
+        html_filename = os.path.join(dest_dir_path, f"{file[:-3]}.html")
+        dest_full_path = os.path.join(dest_dir_path, file)
+        print(f" * {source_full_path} -> {dest_full_path}")
+        if os.path.isfile(source_full_path):
+            generate_page(source_full_path, template_path, html_filename)
+        else:
+            generate_pages_recursive(source_full_path, template_path, dest_full_path)
+
+
 def extract_title(markdown):
     h1_pattern = r"^#{1} ([^\n]+)"
     match = re.search(h1_pattern, markdown, re.MULTILINE)
